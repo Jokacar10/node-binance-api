@@ -114,12 +114,22 @@ describe('getFStreamUrl with category', function () {
     });
 });
 
-describe('Demo mode ignores category (uses legacy URLs)', function () {
-    it('getFStreamSingleUrl returns demo URL regardless of category', function () {
-        assert.equal(demoBinance.getFStreamSingleUrl('market'), 'wss://fstream.binancefuture.com/ws/');
+describe('Demo mode uses category-based URLs', function () {
+    it('getFStreamSingleUrl returns demo URL with category', function () {
+        assert.equal(demoBinance.getFStreamSingleUrl('public'), 'wss://fstream.binancefuture.com/public/ws/');
+        assert.equal(demoBinance.getFStreamSingleUrl('market'), 'wss://fstream.binancefuture.com/market/ws/');
+        assert.equal(demoBinance.getFStreamSingleUrl('private'), 'wss://fstream.binancefuture.com/private/ws/');
     });
-    it('getFStreamUrl returns demo URL regardless of category', function () {
-        assert.equal(demoBinance.getFStreamUrl('market'), 'wss://fstream.binancefuture.com/stream?streams=');
+    it('getFStreamUrl returns demo URL with category', function () {
+        assert.equal(demoBinance.getFStreamUrl('public'), 'wss://fstream.binancefuture.com/public/stream?streams=');
+        assert.equal(demoBinance.getFStreamUrl('market'), 'wss://fstream.binancefuture.com/market/stream?streams=');
+        assert.equal(demoBinance.getFStreamUrl('private'), 'wss://fstream.binancefuture.com/private/stream?streams=');
+    });
+    it('getFStreamSingleUrl returns legacy demo URL without category', function () {
+        assert.equal(demoBinance.getFStreamSingleUrl(), 'wss://fstream.binancefuture.com/ws/');
+    });
+    it('getFStreamUrl returns legacy demo URL without category', function () {
+        assert.equal(demoBinance.getFStreamUrl(), 'wss://fstream.binancefuture.com/stream?streams=');
     });
 });
 

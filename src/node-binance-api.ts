@@ -313,16 +313,24 @@ export default class Binance {
     }
 
     getFStreamSingleUrl(category?: 'public' | 'market' | 'private') {
+        if (category) {
+            if (this.Options.demo) return `wss://fstream.binancefuture.com/${category}/ws/`;
+            if (this.Options.test) return `wss://stream.binancefuture.${this.domain}/${category}/ws/`;
+            return `wss://fstream.binance.${this.domain}/${category}/ws/`;
+        }
         if (this.Options.demo) return this.fstreamSingleDemo;
         if (this.Options.test) return this.fstreamSingleTest;
-        if (category) return `wss://fstream.binance.${this.domain}/${category}/ws/`;
         return this.fstreamSingle;
     }
 
     getFStreamUrl(category?: 'public' | 'market' | 'private') {
+        if (category) {
+            if (this.Options.demo) return `wss://fstream.binancefuture.com/${category}/stream?streams=`;
+            if (this.Options.test) return `wss://stream.binancefuture.${this.domain}/${category}/stream?streams=`;
+            return `wss://fstream.binance.${this.domain}/${category}/stream?streams=`;
+        }
         if (this.Options.demo) return this.fstreamDemo;
         if (this.Options.test) return this.fstreamTest;
-        if (category) return `wss://fstream.binance.${this.domain}/${category}/stream?streams=`;
         return this.fstream;
     }
 
