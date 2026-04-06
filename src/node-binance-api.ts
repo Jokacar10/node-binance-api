@@ -304,11 +304,11 @@ export default class Binance {
             || endpoint.includes('@depth')) {
             return 'public';
         }
-        // Private: listenKey strings (no @ or ! prefix)
-        if (!endpoint.includes('@') && !endpoint.startsWith('!')) {
+        // Private: listenKey is a long alphanumeric string (60+ chars, no @ or !)
+        if (/^[A-Za-z0-9]{20,}$/.test(endpoint)) {
             return 'private';
         }
-        // Market: everything else (aggTrade, markPrice, kline, ticker, miniTicker, forceOrder, etc.)
+        // Market: aggTrade, markPrice, kline, ticker, miniTicker, forceOrder, etc.
         return 'market';
     }
 
