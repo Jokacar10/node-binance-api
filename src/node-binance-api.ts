@@ -294,15 +294,35 @@ export default class Binance {
         return this.dstreamSingle;
     }
 
-    getFStreamSingleUrl() {
+    /**
+     * Classify a futures stream endpoint into public, market, or private category
+     * per Binance USDⓈ-M Futures WebSocket URL split (2026-03-06)
+     */
+    classifyFuturesStream(endpoint: string): 'public' | 'market' | 'private' {
+        // Public: bookTicker and depth streams (high-frequency)
+        if (endpoint.includes('@bookTicker') || endpoint === '!bookTicker'
+            || endpoint.includes('@depth')) {
+            return 'public';
+        }
+        // Private: listenKey strings (no @ or ! prefix)
+        if (!endpoint.includes('@') && !endpoint.startsWith('!')) {
+            return 'private';
+        }
+        // Market: everything else (aggTrade, markPrice, kline, ticker, miniTicker, forceOrder, etc.)
+        return 'market';
+    }
+
+    getFStreamSingleUrl(category?: 'public' | 'market' | 'private') {
         if (this.Options.demo) return this.fstreamSingleDemo;
         if (this.Options.test) return this.fstreamSingleTest;
+        if (category) return `wss://fstream.binance.${this.domain}/${category}/ws/`;
         return this.fstreamSingle;
     }
 
-    getFStreamUrl() {
+    getFStreamUrl(category?: 'public' | 'market' | 'private') {
         if (this.Options.demo) return this.fstreamDemo;
         if (this.Options.test) return this.fstreamTest;
+        if (category) return `wss://fstream.binance.${this.domain}/${category}/stream?streams=`;
         return this.fstream;
     }
 
@@ -1772,6 +1792,8 @@ export default class Binance {
         const httpsproxy = this.getHttpsProxy();
         let socksproxy = this.getSocksProxy();
         let ws: any = undefined;
+        const category = this.classifyFuturesStream(endpoint);
+        const baseUrl = this.getFStreamSingleUrl(category);
 
         if (socksproxy) {
             socksproxy = this.proxyReplacewithIp(socksproxy);
@@ -1781,14 +1803,14 @@ export default class Binance {
                 host: this.parseProxy(socksproxy)[1],
                 port: this.parseProxy(socksproxy)[2]
             });
-            ws = new WebSocket((this.getFStreamSingleUrl()) + endpoint, { agent });
+            ws = new WebSocket(baseUrl + endpoint, { agent });
         } else if (httpsproxy) {
             const config = url.parse(httpsproxy);
             const agent = new HttpsProxyAgent(config);
             if (this.Options.verbose) this.Options.log(`futuresSubscribeSingle: using proxy server: ${agent}`);
-            ws = new WebSocket((this.getFStreamSingleUrl()) + endpoint, { agent });
+            ws = new WebSocket(baseUrl + endpoint, { agent });
         } else {
-            ws = new WebSocket((this.getFStreamSingleUrl()) + endpoint);
+            ws = new WebSocket(baseUrl + endpoint);
         }
 
         if (this.Options.verbose) this.Options.log('futuresSubscribeSingle: Subscribed to ' + endpoint);
@@ -1827,6 +1849,8 @@ export default class Binance {
         const httpsproxy = this.getHttpsProxy();
         let socksproxy = this.getSocksProxy();
         const queryParams = streams.join('/');
+        const category = this.classifyFuturesStream(streams[0]);
+        const baseUrl = this.getFStreamUrl(category);
         let ws: any = undefined;
         if (socksproxy) {
             socksproxy = this.proxyReplacewithIp(socksproxy);
@@ -1836,14 +1860,14 @@ export default class Binance {
                 host: this.parseProxy(socksproxy)[1],
                 port: this.parseProxy(socksproxy)[2]
             });
-            ws = new WebSocket(this.getFStreamUrl() + queryParams, { agent });
+            ws = new WebSocket(baseUrl + queryParams, { agent });
         } else if (httpsproxy) {
             if (this.Options.verbose) this.Options.log(`futuresSubscribe: using proxy server ${httpsproxy}`);
             const config = url.parse(httpsproxy);
             const agent = new HttpsProxyAgent(config);
-            ws = new WebSocket(this.getFStreamUrl() + queryParams, { agent });
+            ws = new WebSocket(baseUrl + queryParams, { agent });
         } else {
-            ws = new WebSocket(this.getFStreamUrl() + queryParams);
+            ws = new WebSocket(baseUrl + queryParams);
         }
 
         ws.reconnect = this.Options.reconnect;
