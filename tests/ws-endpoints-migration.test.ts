@@ -198,6 +198,30 @@ describe('Live: production public stream (bookTicker via /public/)', function ()
     });
 });
 
+describe('Live: demo private stream (userFutureData via /private/)', function () {
+    let endpoint;
+
+    beforeEach(function (done) {
+        this.timeout(TIMEOUT);
+        demoBinance.userFutureData(
+            undefined,  // all_updates_callback
+            undefined,  // margin_call_callback
+            undefined,  // account_update_callback
+            undefined,  // order_update_callback
+            (a_endpoint) => {  // subscribed_callback
+                endpoint = a_endpoint;
+                stopSockets(demoBinance);
+                done();
+            }
+        );
+    });
+
+    it('connects to private user data stream successfully', function () {
+        assert(endpoint !== undefined, 'should have received subscription endpoint');
+        assert(typeof endpoint === 'string', 'endpoint should be a string');
+    });
+});
+
 describe('Live: production combined market stream (kline via /market/)', function () {
     let candle;
     let cnt = 0;
