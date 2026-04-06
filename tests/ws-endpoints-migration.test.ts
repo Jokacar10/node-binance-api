@@ -133,6 +133,25 @@ describe('Demo mode uses category-based URLs', function () {
     });
 });
 
+describe('Private stream URL uses query params for listenKey', function () {
+    it('constructs ?listenKey= URL instead of path-based', function () {
+        const listenKey = 'pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a1a65a1a5s61cv6a81va65sd';
+        const category = binance.classifyFuturesStream(listenKey);
+        const baseUrl = binance.getFStreamSingleUrl(category);
+        const wsUrl = baseUrl.replace(/\/$/, '') + '?listenKey=' + listenKey;
+        assert.equal(category, 'private');
+        assert.equal(wsUrl, `wss://fstream.binance.com/private/ws?listenKey=${listenKey}`);
+    });
+
+    it('constructs query-param URL for demo too', function () {
+        const listenKey = 'pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a1a65a1a5s61cv6a81va65sd';
+        const category = demoBinance.classifyFuturesStream(listenKey);
+        const baseUrl = demoBinance.getFStreamSingleUrl(category);
+        const wsUrl = baseUrl.replace(/\/$/, '') + '?listenKey=' + listenKey;
+        assert.equal(wsUrl, `wss://fstream.binancefuture.com/private/ws?listenKey=${listenKey}`);
+    });
+});
+
 describe('Live: production market stream (aggTrade via /market/)', function () {
     let trade;
     let cnt = 0;

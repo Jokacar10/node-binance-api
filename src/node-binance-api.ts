@@ -1802,6 +1802,10 @@ export default class Binance {
         let ws: any = undefined;
         const category = this.classifyFuturesStream(endpoint);
         const baseUrl = this.getFStreamSingleUrl(category);
+        // Private streams use query params: ?listenKey=<key> instead of path: /<key>
+        const wsUrl = category === 'private'
+            ? baseUrl.replace(/\/$/, '') + '?listenKey=' + endpoint
+            : baseUrl + endpoint;
 
         if (socksproxy) {
             socksproxy = this.proxyReplacewithIp(socksproxy);
@@ -1811,14 +1815,14 @@ export default class Binance {
                 host: this.parseProxy(socksproxy)[1],
                 port: this.parseProxy(socksproxy)[2]
             });
-            ws = new WebSocket(baseUrl + endpoint, { agent });
+            ws = new WebSocket(wsUrl, { agent });
         } else if (httpsproxy) {
             const config = url.parse(httpsproxy);
             const agent = new HttpsProxyAgent(config);
             if (this.Options.verbose) this.Options.log(`futuresSubscribeSingle: using proxy server: ${agent}`);
-            ws = new WebSocket(baseUrl + endpoint, { agent });
+            ws = new WebSocket(wsUrl, { agent });
         } else {
-            ws = new WebSocket(baseUrl + endpoint);
+            ws = new WebSocket(wsUrl);
         }
 
         if (this.Options.verbose) this.Options.log('futuresSubscribeSingle: Subscribed to ' + endpoint);
