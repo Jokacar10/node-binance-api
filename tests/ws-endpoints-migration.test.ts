@@ -180,6 +180,19 @@ describe('futuresSubscribe rejects mixed-category combined streams', function ()
     });
 });
 
+describe('futuresSubscribe combined private streams', function () {
+    it('uses listenKey query params for multiple listenKeys', function () {
+        const k1 = 'pqia91ma19a5s61cv6a81va65sdf19v8a65a1a5s61cv6a81va65sdf19v8a1a65a1a5s61cv6a81va65sd';
+        const k2 = k1.split('').reverse().join('');
+        const ws: any = binance.futuresSubscribe([k1, k2], () => { });
+        try {
+            assert.equal(ws.url, `wss://fstream.binance.com/private/stream?listenKey=${k1}&listenKey=${k2}`);
+        } finally {
+            ws.terminate();
+        }
+    });
+});
+
 describe('Live: production market stream (aggTrade via /market/)', function () {
     let trade;
     let cnt = 0;
